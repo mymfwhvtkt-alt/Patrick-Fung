@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小六壬 · 三傳</title>
+    <title>九宮指靈 · 後天八卦神恩版</title>
     <style>
         :root {
             --bg-color: #1a3c34;
@@ -90,31 +90,32 @@
 <body>
 
 <div class="container">
-    <h2 style="color:var(--accent-color); text-align:center; margin:15px 0 5px; letter-spacing: 2px;">小六壬 · 三傳</h2>
+    <h2 style="color:var(--accent-color); text-align:center; margin:15px 0 5px;">九宮指靈 · 八卦神恩版</h2>
 
     <div class="input-section">
         <div class="input-group">
             <label>三傳數值：</label>
             <div style="width:65%; display:flex; gap:5px;">
-                <input type="number" id="num1" value="1" placeholder="初">
-                <input type="number" id="num2" value="2" placeholder="中">
-                <input type="number" id="num3" value="3" placeholder="末">
+                <input type="number" id="num1" value="1">
+                <input type="number" id="num2" value="2">
+                <input type="number" id="num3" value="3">
             </div>
         </div>
-        <textarea id="memo" placeholder="記錄問事內容與占驗備註..."></textarea>
-        <button onclick="startDivination()">起卦紀錄</button>
+        <textarea id="memo" placeholder="記錄問事內容..."></textarea>
+        <button onclick="startDivination()">起卦存檔</button>
     </div>
 
     <div class="palm-grid" id="grid"></div>
 
     <div class="history-section">
-        <h3 style="border-bottom: 1px solid var(--accent-color); padding-bottom: 5px; font-size: 0.9rem;">歷史占驗筆記</h3>
+        <h3 style="border-bottom: 1px solid var(--accent-color); padding-bottom: 5px; font-size: 0.9rem;">占驗筆記</h3>
         <div id="history-list"></div>
-        <button onclick="clearHistory()" style="background:none; color:#F1948A; font-size:0.7rem; width:100%; margin-top:10px; border:none; text-decoration: underline;">清空數據</button>
+        <button onclick="clearHistory()" style="background:none; color:#F1948A; font-size:0.7rem; width:100%; margin-top:10px; border:none; text-decoration: underline;">清空所有數據</button>
     </div>
 </div>
 
 <script>
+    // 整合九宮、八卦、五行、神明
     const data = {
         1: { name: "大安", gua: "震", elem: "木", gods: "三清" },
         2: { name: "留連", gua: "巽", elem: "木", gods: "文昌帝君" },
@@ -127,6 +128,7 @@
         9: { name: "天德", gua: "乾", elem: "土", gods: "紫微大帝" }
     };
 
+    // 依照後天八卦方位佈局：巽 離 坤 / 震 中 兌 / 艮 坎 乾
     const renderOrder = [2, 3, 7, 1, 6, 4, 8, 5, 9];
     const grid = document.getElementById('grid');
     
@@ -139,9 +141,11 @@
             <span class="num-tag">${id}</span>
             <span class="gua-tag">${item.gua}</span>
             <span class="palace-name">${item.name}</span>
-            <span class="palace-element">【${item.elem}】</span>
+            <span class="palace-element">${item.elem}木/位</span>
             <span class="palace-god">${item.gods}</span>
         `;
+        // 修正五行顯示邏輯
+        div.querySelector('.palace-element').innerText = `【${item.elem}】`;
         grid.appendChild(div);
     });
 
@@ -176,16 +180,16 @@
             memo: memoText
         };
 
-        let history = JSON.parse(localStorage.getItem('xiaoliuren_v5') || '[]');
+        let history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
         history.unshift(record);
-        localStorage.setItem('xiaoliuren_v5', JSON.stringify(history));
+        localStorage.setItem('divine_history_v4', JSON.stringify(history));
 
         displayHistory();
         document.getElementById('memo').value = "";
     }
 
     function displayHistory() {
-        const history = JSON.parse(localStorage.getItem('xiaoliuren_v5') || '[]');
+        const history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
         const list = document.getElementById('history-list');
         list.innerHTML = history.map((item, index) => `
             <div class="history-item">
@@ -199,15 +203,15 @@
     }
 
     function deleteItem(index) {
-        let history = JSON.parse(localStorage.getItem('xiaoliuren_v5') || '[]');
+        let history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
         history.splice(index, 1);
-        localStorage.setItem('xiaoliuren_v5', JSON.stringify(history));
+        localStorage.setItem('divine_history_v4', JSON.stringify(history));
         displayHistory();
     }
 
     function clearHistory() {
-        if(confirm("確定清空所有筆記嗎？")) {
-            localStorage.removeItem('xiaoliuren_v5');
+        if(confirm("確定清空嗎？")) {
+            localStorage.removeItem('divine_history_v4');
             displayHistory();
         }
     }
