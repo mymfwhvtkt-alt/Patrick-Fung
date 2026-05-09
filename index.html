@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>九宮指靈 · 後天八卦神恩版</title>
+    <title>小六壬 · 三傳</title>
     <style>
         :root {
             --bg-color: #1a3c34;
@@ -20,17 +20,14 @@
             color: white;
             font-family: -apple-system, "Microsoft JhengHei", sans-serif;
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; flex-direction: column; align-items: center;
             padding-bottom: 50px;
         }
 
         .container { width: 95vw; max-width: 450px; }
 
         .input-section {
-            background: var(--card-bg);
-            padding: 15px; border-radius: 15px;
+            background: var(--card-bg); padding: 15px; border-radius: 15px;
             margin: 15px 0; display: flex; flex-direction: column; gap: 10px;
         }
 
@@ -55,42 +52,49 @@
 
         .palace {
             background: var(--card-bg); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px; height: 115px;
+            border-radius: 10px; height: 125px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            position: relative; transition: 0.3s; text-align: center; overflow: hidden;
+            position: relative; transition: 0.3s; text-align: center;
         }
 
         .num-tag { position: absolute; top: 3px; left: 5px; font-size: 10px; color: var(--accent-color); font-weight: bold; }
-        .gua-tag { position: absolute; top: 3px; right: 5px; font-size: 10px; color: #fff; opacity: 0.6; }
         
+        /* 八卦與符號容器 */
+        .gua-container { 
+            position: absolute; top: 3px; right: 5px; 
+            display: flex; flex-direction: column; align-items: center; 
+            line-height: 1;
+        }
+        .gua-tag { font-size: 10px; color: #fff; opacity: 0.6; }
+        .yi-symbol { font-size: 12px; color: var(--accent-color); opacity: 0.8; margin-top: 2px; }
+
         .palace-name { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); }
-        .palace-element { font-size: 0.7rem; opacity: 0.9; margin-bottom: 2px; }
-        .palace-god { font-size: 0.6rem; opacity: 0.8; line-height: 1.2; padding: 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .palace-element { font-size: 0.7rem; opacity: 0.9; }
+        .palace-god { font-size: 0.6rem; opacity: 0.8; line-height: 1.2; padding: 0 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
         .active-1 { background: var(--color-first) !important; color: #000; }
         .active-2 { background: var(--color-second) !important; color: #000; }
-        .active-3 { 
-            background: var(--color-third) !important; color: #000; 
-            transform: scale(1.05); box-shadow: 0 0 15px var(--color-third); 
-            z-index: 10;
-        }
+        .active-3 { background: var(--color-third) !important; color: #000; transform: scale(1.05); box-shadow: 0 0 15px var(--color-third); z-index: 10; }
 
-        .history-section { margin-top: 10px; width: 100%; }
         .history-item {
             background: var(--card-bg); padding: 12px; border-radius: 10px;
             margin-bottom: 10px; border-left: 4px solid var(--accent-color);
-            font-size: 0.85rem;
+            font-size: 0.85rem; position: relative;
         }
         .history-time { font-size: 0.7rem; opacity: 0.5; margin-bottom: 4px; }
-        .history-god-tag { color: #5DADE2; font-size: 0.75rem; margin-top: 4px; font-weight: bold; }
-        .history-memo { color: #ddd; margin-top: 6px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; font-size: 0.8rem; }
-        .delete-btn { color: #F1948A; font-size: 0.7rem; float: right; cursor: pointer; }
+        .history-memo { color: #ddd; margin-top: 6px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; }
+        .history-update { color: #5DADE2; margin-top: 6px; padding: 4px; background: rgba(93, 173, 226, 0.1); border-radius: 4px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 8px; }
+        .action-btn { font-size: 0.7rem; cursor: pointer; padding: 3px 8px; border: 1px solid; border-radius: 4px; background: transparent; }
+        .del-btn { color: #F1948A; border-color: #F1948A; }
+        .add-btn { color: #5DADE2; border-color: #5DADE2; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color:var(--accent-color); text-align:center; margin:15px 0 5px;">九宮指靈 · 八卦神恩版</h2>
+    <h2 style="color:var(--accent-color); text-align:center; margin:15px 0 5px; letter-spacing: 2px;">小六壬 · 三傳</h2>
 
     <div class="input-section">
         <div class="input-group">
@@ -101,60 +105,53 @@
                 <input type="number" id="num3" value="3">
             </div>
         </div>
-        <textarea id="memo" placeholder="記錄問事內容..."></textarea>
-        <button onclick="startDivination()">起卦存檔</button>
+        <textarea id="memo" placeholder="輸入問事內容..."></textarea>
+        <button onclick="startDivination()">起卦紀錄</button>
     </div>
 
     <div class="palm-grid" id="grid"></div>
 
     <div class="history-section">
-        <h3 style="border-bottom: 1px solid var(--accent-color); padding-bottom: 5px; font-size: 0.9rem;">占驗筆記</h3>
+        <h3 style="border-bottom: 1px solid var(--accent-color); padding-bottom: 5px; font-size: 0.9rem;">歷史占驗筆記</h3>
         <div id="history-list"></div>
-        <button onclick="clearHistory()" style="background:none; color:#F1948A; font-size:0.7rem; width:100%; margin-top:10px; border:none; text-decoration: underline;">清空所有數據</button>
+        <button onclick="clearHistory()" style="background:none; color:#F1948A; font-size:0.7rem; width:100%; margin-top:20px; border:none; text-decoration: underline;">清空數據</button>
     </div>
 </div>
 
 <script>
-    // 整合九宮、八卦、五行、神明
+    const STORAGE_KEY = 'xiaoliuren_v5';
     const data = {
-        1: { name: "大安", gua: "震", elem: "木", gods: "三清" },
-        2: { name: "留連", gua: "巽", elem: "木", gods: "文昌帝君" },
-        3: { name: "速喜", gua: "離", elem: "火", gods: "九天應元雷聲普化天尊" },
-        4: { name: "赤口", gua: "兌", elem: "金", gods: "太白金星" },
-        5: { name: "小吉", gua: "坎", elem: "水", gods: "太陰星君、天蓬元帥" },
-        6: { name: "空亡", gua: "中宮", elem: "土", gods: "玉帝" },
-        7: { name: "病符", gua: "坤", elem: "土", gods: "福德正神、後土、地母" },
-        8: { name: "桃花", gua: "艮", elem: "土", gods: "城隍、月老" },
-        9: { name: "天德", gua: "乾", elem: "土", gods: "紫微大帝" }
+        1: { name: "大安", gua: "震", symbol: "☳", elem: "木", gods: "三清" },
+        2: { name: "留連", gua: "巽", symbol: "☴", elem: "木", gods: "文昌帝君" },
+        3: { name: "速喜", gua: "離", symbol: "☲", elem: "火", gods: "九天應元雷聲普化天尊" },
+        4: { name: "赤口", gua: "兌", symbol: "☱", elem: "金", gods: "太白金星" },
+        5: { name: "小吉", gua: "坎", symbol: "☵", elem: "水", gods: "太陰星君、天蓬元帥" },
+        6: { name: "空亡", gua: "中", symbol: "☯", elem: "土", gods: "玉帝" },
+        7: { name: "病符", gua: "坤", symbol: "☷", elem: "土", gods: "福德正神、後土、地母" },
+        8: { name: "桃花", gua: "艮", symbol: "☶", elem: "土", gods: "城隍、月老" },
+        9: { name: "天德", gua: "乾", symbol: "☰", elem: "土", gods: "紫微大帝" }
     };
 
-    // 依照後天八卦方位佈局：巽 離 坤 / 震 中 兌 / 艮 坎 乾
     const renderOrder = [2, 3, 7, 1, 6, 4, 8, 5, 9];
     const grid = document.getElementById('grid');
-    
     renderOrder.forEach(id => {
         const item = data[id];
         const div = document.createElement('div');
-        div.className = `palace`;
-        div.id = `palace-${id}`;
+        div.className = `palace`; div.id = `palace-${id}`;
         div.innerHTML = `
             <span class="num-tag">${id}</span>
-            <span class="gua-tag">${item.gua}</span>
+            <div class="gua-container">
+                <span class="gua-tag">${item.gua}</span>
+                <span class="yi-symbol">${item.symbol}</span>
+            </div>
             <span class="palace-name">${item.name}</span>
-            <span class="palace-element">${item.elem}木/位</span>
+            <span class="palace-element">【${item.elem}】</span>
             <span class="palace-god">${item.gods}</span>
         `;
-        // 修正五行顯示邏輯
-        div.querySelector('.palace-element').innerText = `【${item.elem}】`;
         grid.appendChild(div);
     });
 
-    function getFinalPos(sum) {
-        let res = sum % 9;
-        return res === 0 ? 9 : res;
-    }
-
-    displayHistory();
+    function getFinalPos(sum) { let res = sum % 9; return res === 0 ? 9 : res; }
 
     function startDivination() {
         const n1 = parseInt(document.getElementById('num1').value) || 0;
@@ -163,58 +160,71 @@
         const memoText = document.getElementById('memo').value;
 
         document.querySelectorAll('.palace').forEach(p => p.classList.remove('active-1', 'active-2', 'active-3'));
-
-        const f = getFinalPos(n1);
-        const s = getFinalPos(n1 + n2);
-        const t = getFinalPos(n1 + n2 + n3);
-
+        const f = getFinalPos(n1); const s = getFinalPos(n1 + n2); const t = getFinalPos(n1 + n2 + n3);
         document.getElementById(`palace-${f}`).classList.add('active-1');
         document.getElementById(`palace-${s}`).classList.add('active-2');
         document.getElementById(`palace-${t}`).classList.add('active-3');
 
         const record = {
+            id: Date.now(),
             time: new Date().toLocaleString(),
-            nums: `${n1}, ${n2}, ${n3}`,
-            res: `${data[f].name}(${data[f].gua}) → ${data[s].name}(${data[s].gua}) → ${data[t].name}(${data[t].gua})`,
+            res: `${data[f].name} → ${data[s].name} → ${data[t].name}`,
             god: data[t].gods,
-            memo: memoText
+            memo: memoText,
+            update: ""
         };
 
-        let history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         history.unshift(record);
-        localStorage.setItem('divine_history_v4', JSON.stringify(history));
-
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
         displayHistory();
         document.getElementById('memo').value = "";
     }
 
     function displayHistory() {
-        const history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         const list = document.getElementById('history-list');
         list.innerHTML = history.map((item, index) => `
             <div class="history-item">
-                <span class="delete-btn" onclick="deleteItem(${index})">刪除</span>
                 <div class="history-time">${item.time}</div>
                 <div><b>${item.res}</b></div>
-                <div class="history-god-tag">🔱 護持：${item.god}</div>
-                ${item.memo ? `<div class="history-memo">📝 筆記：${item.memo}</div>` : ''}
+                <div style="font-size:0.7rem; color:#ffd700;">🔱 護持：${item.god}</div>
+                ${item.memo ? `<div class="history-memo">📝 問事：${item.memo}</div>` : ''}
+                ${item.update ? `<div class="history-update">✅ 占驗：${item.update}</div>` : ''}
+                <div class="btn-group">
+                    <button class="action-btn add-btn" onclick="updateRecord(${index})">＋追加備註</button>
+                    <button class="action-btn del-btn" onclick="deleteItem(${index})">刪除</button>
+                </div>
             </div>
         `).join('');
     }
 
-    function deleteItem(index) {
-        let history = JSON.parse(localStorage.getItem('divine_history_v4') || '[]');
-        history.splice(index, 1);
-        localStorage.setItem('divine_history_v4', JSON.stringify(history));
-        displayHistory();
-    }
-
-    function clearHistory() {
-        if(confirm("確定清空嗎？")) {
-            localStorage.removeItem('divine_history_v4');
+    function updateRecord(index) {
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const newNote = prompt("請輸入追加的占驗備註：", history[index].update);
+        if (newNote !== null) {
+            history[index].update = newNote;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
             displayHistory();
         }
     }
+
+    function deleteItem(index) {
+        if(confirm("確定刪除此紀錄？")) {
+            let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            history.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            displayHistory();
+        }
+    }
+
+    function clearHistory() {
+        if(confirm("確定清空所有數據？")) {
+            localStorage.removeItem(STORAGE_KEY);
+            displayHistory();
+        }
+    }
+    displayHistory();
 </script>
 </body>
 </html>
