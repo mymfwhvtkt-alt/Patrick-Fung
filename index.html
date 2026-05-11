@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小六壬 · 三傳</title>
+    <style>
+        :root {
+            --bg-color: #1a3c34;
+            --accent-color: #ffd700;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.2);
+            /* 修改後的亮燈顏色 */
+            --color-first: #76D7C4;  /* 柔和青綠 */
+            --color-second: #85C1E9; /* 明亮天藍 */
+            --color-third: #F8C471;  /* 暖金橙色 */
+            
+            --wu-jin: #FFFFFF;
+            --wu-mu: #58D68D;
+            --wu-shui: #5DADE2;
+            --wu-huo: #F1948A;
+            --wu-tu: #E67E22;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: -apple-system, "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 50px;
+        }
+
+        .container { width: 95vw; max-width: 450px; }
+
+        .input-section {
+            background: var(--card-bg); padding: 15px; border-radius: 15px;
+            margin: 15px 0 10px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .input-group { display: flex; align-items: center; justify-content: space-between; }
+        input, textarea {
+            background: var(--input-bg); border: 1px solid var(--accent-color);
+            color: white; padding: 8px; border-radius: 5px; font-size: 1rem;
+        }
+        input { width: 28%; text-align: center; }
+        textarea { width: 100%; height: 50px; box-sizing: border-box; resize: none; margin-top: 5px; }
+        button {
+            background: var(--accent-color); color: var(--bg-color);
+            border: none; padding: 12px; border-radius: 8px;
+            font-weight: bold; cursor: pointer; font-size: 1rem;
+        }
+
+        .time-display {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        .western-time { font-size: 0.8rem; color: #bbb; margin-bottom: 8px; letter-spacing: 1px; }
+        .bazi-row { display: flex; flex-direction: row-reverse; justify-content: center; gap: 20px; }
+        .bazi-item { display: flex; flex-direction: column; align-items: center; }
+        .bazi-label { font-size: 0.6rem; opacity: 0.6; margin-bottom: 4px; }
+        .bazi-val-box { display: flex; flex-direction: column; font-size: 1.2rem; font-weight: bold; line-height: 1.1; }
+
+        .palm-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 8px; margin-bottom: 15px;
+        }
+        .palace {
+            background: var(--card-bg); 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; height: 135px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            text-align: center;
+        }
+
+        .top-left-tag { position: absolute; top: 5px; left: 6px; display: flex; align-items: baseline; gap: 2px; }
+        .num-main { font-size: 10px; color: var(--accent-color); font-weight: bold; }
+        .sub-text { font-size: 8px; color: var(--accent-color); opacity: 0.8; }
+        .gua-container { position: absolute; top: 5px; right: 8px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+        .gua-tag { font-size: 12px; color: #fff; opacity: 0.7; }
+        .yi-symbol { font-size: 13px; color: var(--accent-color); opacity: 0.9; }
+        .dir-tag { position: absolute; bottom: 5px; left: 8px; font-size: 9px; color: #fff; opacity: 0.5; }
+
+        .palace-name { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); margin-top: 12px; }
+        .palace-element { font-size: 0.7rem; font-weight: bold; margin: 2px 0; }
+        .palace-god { font-size: 0.6rem; opacity: 0.8; line-height: 1.2; padding: 0 4px; }
+
+        .color-jin { color: var(--wu-jin); }
+        .color-mu { color: var(--wu-mu); }
+        .color-shui { color: var(--wu-shui); }
+        .color-huo { color: var(--wu-huo); }
+        .color-tu { color: var(--wu-tu); }
+
+        /* --- 亮燈顏色優化 --- */
+        .active-1 { 
+            background: var(--color-first) !important; 
+            color: #1a3c34 !important; 
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(118, 215, 196, 0.5);
+        }
+        .active-2 { 
+            background: var(--color-second) !important; 
+            color: #1a3c34 !important; 
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(133, 193, 233, 0.5);
+        }
+        .active-3 { 
+            background: var(--color-third) !important; 
+            color: #1a3c34 !important; 
+            transform: scale(1.08); 
+            z-index: 10; 
+            border: 2.5px solid #fff;
+            box-shadow: 0 0 20px rgba(248, 196, 113, 0.8), inset 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        /* 亮燈時讓內部特定文字變色以確保清晰 */
+        .active-1 *, .active-2 *, .active-3 * { color: #1a3c34 !important; opacity: 1 !important; }
+
+        .history-item { background: var(--card-bg); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent-color); font-size: 0.85rem; }
+        .history-time { font-size: 0.7rem; opacity: 0.5; margin-bottom: 4px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 8px; }
+        .action-btn { font-size: 0.7rem; cursor: pointer; padding: 5px 12px; border: 1px solid; border-radius: 4px; background: transparent; }
+        .del-btn { color: #F1948A; border-color: #F1948A; }
+        .add-btn { color: #5DADE2; border-color: #5DADE2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="color:var(--accent-color); text-align:center; margin:15px 0 5px; letter-spacing: 2px;">小六壬 · 三傳</h2>
+
+    <div class="input-section">
+        <div class="input-group">
+            <label>三傳數值：</label>
+            <div style="width:65%; display:flex; gap:5px;">
+                <input type="number" id="num1" value="1">
+                <input type="number" id="num2" value="2">
+                <input type="number" id="num3" value="3">
+            </div>
+        </div>
+        <textarea id="memo" placeholder="輸入問事內容..."></textarea>
+        <button onclick="startDivination()">起卦</button>
+    </div>
+
+    <div class="time-display">
+        <div class="western-time" id="clock">正在讀取時間...</div>
+        <div class="bazi-row" id="bazi-container"></div>
+    </div>
+
+    <div class="palm-grid" id="grid"></div>
+
+    <div class="history-section">
+        <h3 style="border-bottom: 1px solid var(--accent-color); padding-bottom: 5px; font-size: 0.9rem;">歷史占驗筆記</h3>
+        <div id="history-list"></div>
+        <button onclick="clearHistory()" style="background:none; color:#F1948A; font-size:0.7rem; width:100%; margin-top:20px; border:none; text-decoration: underline;">清空數據</button>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'xiaoliuren_v5';
+    const wuXingMap = {
+        "甲": "mu", "乙": "mu", "寅": "mu", "卯": "mu", "震": "mu", "巽": "mu",
+        "丙": "huo", "丁": "huo", "巳": "huo", "午": "huo", "離": "huo",
+        "庚": "jin", "辛": "jin", "申": "jin", "酉": "jin", "兌": "jin", "乾": "jin",
+        "壬": "shui", "癸": "shui", "亥": "shui", "子": "shui", "坎": "shui",
+        "戊": "tu", "己": "tu", "辰": "tu", "戌": "tu", "丑": "tu", "未": "tu", "坤": "tu", "艮": "tu", "中": "tu"
+    };
+
+    const data = {
+        1: { name: "大安", gua: "震", symbol: "☳", dir: "正東", elem: "木", gods: "三清" },
+        2: { name: "留連", gua: "巽", symbol: "☴", dir: "東南", elem: "木", gods: "文昌帝君" },
+        3: { name: "速喜", gua: "離", symbol: "☲", dir: "正南", elem: "火", gods: "九天應元雷聲普化天尊" },
+        4: { name: "赤口", gua: "兌", symbol: "☱", dir: "正西", elem: "金", gods: "太白金星" },
+        5: { name: "小吉", gua: "坎", symbol: "☵", dir: "正北", elem: "水", gods: "太陰星君、天蓬元帥" },
+        6: { name: "空亡", gua: "中", symbol: "☯", dir: "中宮", elem: "土", gods: "玉帝" },
+        7: { name: "病符", gua: "坤", symbol: "☷", dir: "西南", elem: "土", gods: "福德正神、後土、地母" },
+        8: { name: "桃花", gua: "艮", symbol: "☶", dir: "東北", elem: "土", gods: "城隍、月老" },
+        9: { name: "天德", gua: "乾", symbol: "☰", dir: "西北", elem: "土", gods: "紫微大帝" }
+    };
+
+    const gan = ["庚", "辛", "壬", "癸", "甲", "乙", "丙", "丁", "戊", "己"]; 
+    const zhi = ["申", "酉", "戌", "亥", "子", "丑", "寅", "卯", "辰", "巳", "午", "未"];
+
+    function getWuXingClass(char) { return `color-${wuXingMap[char] || 'jin'}`; }
+
+    function getBazi() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const baseDate = new Date(1900, 0, 1);
+        const diffDays = Math.floor((now - baseDate) / (24 * 3600 * 1000));
+        const hour = now.getHours();
+        const b = {
+            yG: gan[(year - 4) % 10], yZ: zhi[(year - 4) % 12],
+            mG: gan[(year * 12 + month + 2) % 10], mZ: zhi[(month + 1) % 12],
+            dG: gan[(diffDays + 10) % 10], dZ: zhi[(diffDays + 2) % 12],
+            hIdx: Math.floor((hour + 1) / 2) % 12
+        };
+        b.hG = gan[(diffDays * 12 + b.hIdx + 2) % 10];
+        b.hZ = zhi[b.hIdx];
+        b.fullTime = now.toLocaleString();
+        return b;
+    }
+
+    function updateClock() {
+        const b = getBazi();
+        document.getElementById('clock').innerText = b.fullTime;
+        const container = document.getElementById('bazi-container');
+        const pillars = [{label:'年柱',g:b.yG,z:b.yZ},{label:'月柱',g:b.mG,z:b.mZ},{label:'日柱',g:b.dG,z:b.dZ},{label:'時柱',g:b.hG,z:b.hZ}];
+        container.innerHTML = pillars.map(p => `<div class="bazi-item"><span class="bazi-label">${p.label}</span><div class="bazi-val-box"><span class="${getWuXingClass(p.g)}">${p.g}</span><span class="${getWuXingClass(p.z)}">${p.z}</span></div></div>`).join('');
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const renderOrder = [2, 3, 7, 1, 6, 4, 8, 5, 9];
+    const grid = document.getElementById('grid');
+    renderOrder.forEach(id => {
+        const item = data[id];
+        const wxClass = getWuXingClass(item.gua);
+        const div = document.createElement('div');
+        div.className = `palace`; div.id = `palace-${id}`;
+        div.innerHTML = `<div class="top-left-tag"><span class="num-main">${id}</span><span class="sub-text">（小六壬。三傳）</span></div><div class="gua-container"><span class="gua-tag ${wxClass}">${item.gua}</span><span class="yi-symbol ${wxClass}">${item.symbol}</span></div><span class="dir-tag">${item.dir}</span><span class="palace-name">${item.name}</span><span class="palace-element ${wxClass}">【${item.elem}】</span><span class="palace-god">${item.gods}</span>`;
+        grid.appendChild(div);
+    });
+
+    function getFinalPos(sum) { let res = sum % 9; return res === 0 ? 9 : res; }
+
+    function startDivination() {
+        const n1 = parseInt(document.getElementById('num1').value) || 0;
+        const n2 = parseInt(document.getElementById('num2').value) || 0;
+        const n3 = parseInt(document.getElementById('num3').value) || 0;
+        const memoText = document.getElementById('memo').value;
+        const b = getBazi();
+
+        document.querySelectorAll('.palace').forEach(p => p.classList.remove('active-1', 'active-2', 'active-3'));
+        const f = getFinalPos(n1); const s = getFinalPos(n1 + n2); const t = getFinalPos(n1 + n2 + n3);
+        document.getElementById(`palace-${f}`).classList.add('active-1');
+        document.getElementById(`palace-${s}`).classList.add('active-2');
+        document.getElementById(`palace-${t}`).classList.add('active-3');
+
+        const record = { id: Date.now(), time: b.fullTime, bazi: `${b.yG}${b.yZ} ${b.mG}${b.mZ} ${b.dG}${b.dZ} ${b.hG}${b.hZ}`, res: `${data[f].name} → ${data[s].name} → ${data[t].name}`, god: data[t].gods, memo: memoText, update: "" };
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        history.unshift(record);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        displayHistory();
+        document.getElementById('memo').value = "";
+    }
+
+    function displayHistory() {
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const list = document.getElementById('history-list');
+        list.innerHTML = history.map((item, index) => `<div class="history-item"><div class="history-time">${item.time} | ${item.bazi}</div><div><b>${item.res}</b></div><div style="font-size:0.7rem; color:#ffd700;">🔱 護持：${item.god}</div>${item.memo ? `<div style="color:#ddd; margin-top:6px; font-style:italic; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">📝 問事：${item.memo}</div>` : ''}${item.update ? `<div style="color:#5DADE2; margin-top:6px; padding:4px; background:rgba(93, 173, 226, 0.1); border-radius:4px;">✅ 占驗：${item.update}</div>` : ''}<div class="btn-group"><button class="action-btn add-btn" onclick="updateRecord(${index})">＋追加備註</button><button class="action-btn del-btn" onclick="deleteItem(${index})">刪除</button></div></div>`).join('');
+    }
+
+    function updateRecord(index) {
+        let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const newNote = prompt("請輸入追加的占驗備註：", history[index].update);
+        if (newNote !== null) { history[index].update = newNote; localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); displayHistory(); }
+    }
+
+    function deleteItem(index) { if(confirm("確定刪除此紀錄？")) { let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); history.splice(index, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); displayHistory(); } }
+    function clearHistory() { if(confirm("確定清空所有數據？")) { localStorage.removeItem(STORAGE_KEY); displayHistory(); } }
+    displayHistory();
+</script>
+</body>
+</html>
