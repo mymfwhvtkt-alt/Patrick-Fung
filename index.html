@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小六壬 · 三傳</title>
+    <title>小六壬 · 三傳 (精確曆法版)</title>
+    <!-- 引入專業曆法庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
     <style>
         :root {
             --bg-color: #1a3c34;
@@ -31,6 +33,7 @@
 
         .container { width: 95vw; max-width: 450px; }
 
+        /* 輸入區域 */
         .input-section {
             background: var(--card-bg); padding: 15px; border-radius: 15px;
             margin: 15px 0 10px; display: flex; flex-direction: column; gap: 10px;
@@ -48,13 +51,11 @@
             font-weight: bold; cursor: pointer; font-size: 1rem;
         }
 
+        /* 八字顯示區域 */
         .time-display {
             background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(255, 215, 0, 0.2);
+            margin-bottom: 15px; padding: 12px; border-radius: 12px;
+            text-align: center; border: 1px solid rgba(255, 215, 0, 0.2);
         }
         .western-time { font-size: 0.8rem; color: #bbb; margin-bottom: 8px; letter-spacing: 1px; }
         .bazi-row { display: flex; flex-direction: row-reverse; justify-content: center; gap: 20px; }
@@ -62,38 +63,41 @@
         .bazi-label { font-size: 0.6rem; opacity: 0.6; margin-bottom: 4px; }
         .bazi-val-box { display: flex; flex-direction: column; font-size: 1.2rem; font-weight: bold; line-height: 1.1; }
 
+        /* 九宮格佈局 */
         .palm-grid {
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 8px; margin-bottom: 15px;
         }
         .palace {
             background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; height: 135px;
+            border-radius: 10px; height: 130px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             position: relative; transition: all 0.4s; text-align: center;
         }
 
-        .top-left-tag { position: absolute; top: 5px; left: 6px; display: flex; align-items: baseline; gap: 2px; }
+        /* 宮位標籤 */
+        .top-left-tag { position: absolute; top: 5px; left: 6px; }
         .num-main { font-size: 10px; color: var(--accent-color); font-weight: bold; }
-        .sub-text { font-size: 8px; color: var(--accent-color); opacity: 0.8; }
         .gua-container { position: absolute; top: 5px; right: 8px; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
         .gua-tag { font-size: 12px; color: #fff; opacity: 0.7; }
         .yi-symbol { font-size: 13px; color: var(--accent-color); opacity: 0.9; }
         .dir-tag { position: absolute; bottom: 5px; left: 8px; font-size: 9px; color: #fff; opacity: 0.5; }
 
-        .palace-name { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); margin-top: 12px; }
+        .palace-name { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); margin-top: 10px; }
         .palace-element { font-size: 0.7rem; font-weight: bold; margin: 2px 0; }
         .palace-god { font-size: 0.6rem; opacity: 0.8; line-height: 1.2; padding: 0 4px; }
 
+        /* 五行顏色 */
         .color-jin { color: var(--wu-jin); }
         .color-mu { color: var(--wu-mu); }
         .color-shui { color: var(--wu-shui); }
         .color-huo { color: var(--wu-huo); }
         .color-tu { color: var(--wu-tu); }
 
+        /* 亮燈效果 */
         .active-1 { background: var(--color-first) !important; color: #1a3c34 !important; border: 2px solid #fff; }
         .active-2 { background: var(--color-second) !important; color: #1a3c34 !important; border: 2px solid #fff; }
-        .active-3 { background: var(--color-third) !important; color: #1a3c34 !important; transform: scale(1.08); z-index: 10; border: 2.5px solid #fff; box-shadow: 0 0 20px rgba(248, 196, 113, 0.8); }
+        .active-3 { background: var(--color-third) !important; color: #1a3c34 !important; transform: scale(1.05); z-index: 10; border: 2.5px solid #fff; box-shadow: 0 0 15px rgba(248, 196, 113, 0.8); }
         .active-1 *, .active-2 *, .active-3 * { color: #1a3c34 !important; opacity: 1 !important; }
 
         .history-item { background: var(--card-bg); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent-color); font-size: 0.85rem; }
@@ -118,10 +122,11 @@
     </div>
 
     <div class="time-display">
-        <div class="western-time" id="clock">正在讀取時間...</div>
+        <div class="western-time" id="clock">正在載入曆法數據...</div>
         <div class="bazi-row" id="bazi-container"></div>
     </div>
 
+    <!-- 九宮格區域 -->
     <div class="palm-grid" id="grid"></div>
 
     <div class="history-section">
@@ -132,9 +137,8 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'xiaoliuren_v5';
-    const gan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
-    const zhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+    const STORAGE_KEY = 'xiaoliuren_lunar_v2';
+    
     const wuXingMap = {
         "甲": "mu", "乙": "mu", "寅": "mu", "卯": "mu", "震": "mu", "巽": "mu",
         "丙": "huo", "丁": "huo", "巳": "huo", "午": "huo", "離": "huo",
@@ -147,65 +151,67 @@
 
     function getBazi() {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
-        const day = now.getDate();
-        const hour = now.getHours();
-
-        // 1. 年柱：2026年是 丙午年
-        const yG = "丙";
-        const yZ = "午";
-
-        // 2. 月柱 (根據丙辛起庚寅 -> 庚寅、辛卯、壬辰、癸巳)
-        // 2026年5月對應農曆三/四月，當下為 癸巳月
-        const mG = "癸";
-        const mZ = "巳";
-
-        // 3. 日柱 (校準今日 2026/05/11 為 乙酉日)
-        const dG = "乙";
-        const dZ = "酉";
-
-        // 4. 時柱 (五鼠遁日訣：乙庚起丙子)
-        const hourOffsets = { "甲": 0, "己": 0, "乙": 2, "庚": 2, "丙": 4, "辛": 4, "丁": 6, "壬": 6, "戊": 8, "癸": 8 };
-        let startHourGanIdx = hourOffsets[dG]; // 乙日從丙子開始
-        let hZIdx = Math.floor((hour + 1) / 2) % 12;
-        let hG = gan[(startHourGanIdx + hZIdx) % 10];
-        let hZ = zhi[hZIdx];
-
-        return { yG, yZ, mG, mZ, dG, dZ, hG, hZ, fullTime: now.toLocaleString() };
+        const lunar = Lunar.fromDate(now);
+        const eightChar = lunar.getEightChar();
+        
+        return {
+            yG: eightChar.getYearGan(), yZ: eightChar.getYearZhi(),
+            mG: eightChar.getMonthGan(), mZ: eightChar.getMonthZhi(),
+            dG: eightChar.getDayGan(), dZ: eightChar.getDayZhi(),
+            hG: eightChar.getTimeGan(), hZ: eightChar.getTimeZhi(),
+            fullTime: now.toLocaleString()
+        };
     }
 
     function updateClock() {
         const b = getBazi();
         document.getElementById('clock').innerText = b.fullTime;
         const container = document.getElementById('bazi-container');
-        const pillars = [{label:'年柱',g:b.yG,z:b.yZ},{label:'月柱',g:b.mG,z:b.mZ},{label:'日柱',g:b.dG,z:b.dZ},{label:'時柱',g:b.hG,z:b.hZ}];
-        container.innerHTML = pillars.map(p => `<div class="bazi-item"><span class="bazi-label">${p.label}</span><div class="bazi-val-box"><span class="${getWuXingClass(p.g)}">${p.g}</span><span class="${getWuXingClass(p.z)}">${p.z}</span></div></div>`).join('');
+        const pillars = [{label:'年',g:b.yG,z:b.yZ},{label:'月',g:b.mG,z:b.mZ},{label:'日',g:b.dG,z:b.dZ},{label:'時',g:b.hG,z:b.hZ}];
+        container.innerHTML = pillars.map(p => `
+            <div class="bazi-item">
+                <span class="bazi-label">${p.label}</span>
+                <div class="bazi-val-box">
+                    <span class="${getWuXingClass(p.g)}">${p.g}</span>
+                    <span class="${getWuXingClass(p.z)}">${p.z}</span>
+                </div>
+            </div>`).join('');
     }
 
     setInterval(updateClock, 1000);
     updateClock();
 
-    const data = {
+    const palaceData = {
         1: { name: "大安", gua: "震", symbol: "☳", dir: "正東", elem: "木", gods: "三清" },
-        2: { name: "留連", gua: "巽", symbol: "☴", dir: "東南", elem: "木", gods: "文昌帝君" },
-        3: { name: "速喜", gua: "離", symbol: "☲", dir: "正南", elem: "火", gods: "九天應元雷聲普化天尊" },
-        4: { name: "赤口", gua: "兌", symbol: "☱", dir: "正西", elem: "金", gods: "太白金星" },
-        5: { name: "小吉", gua: "坎", symbol: "☵", dir: "正北", elem: "水", gods: "太陰星君、天蓬元帥" },
+        2: { name: "留連", gua: "巽", symbol: "☴", dir: "東南", elem: "木", gods: "文昌" },
+        3: { name: "速喜", gua: "離", symbol: "☲", dir: "正南", elem: "火", gods: "雷聲" },
+        4: { name: "赤口", gua: "兌", symbol: "☱", dir: "正西", elem: "金", gods: "太白" },
+        5: { name: "小吉", gua: "坎", symbol: "☵", dir: "正北", elem: "水", gods: "太陰" },
         6: { name: "空亡", gua: "中", symbol: "☯", dir: "中宮", elem: "土", gods: "玉帝" },
-        7: { name: "病符", gua: "坤", symbol: "☷", dir: "西南", elem: "土", gods: "福德正神、後土、地母" },
-        8: { name: "桃花", gua: "艮", symbol: "☶", dir: "東北", elem: "土", gods: "城隍、月老" },
-        9: { name: "天德", gua: "乾", symbol: "☰", dir: "西北", elem: "金", gods: "紫微大帝" }
+        7: { name: "病符", gua: "坤", symbol: "☷", dir: "西南", elem: "土", gods: "地母" },
+        8: { name: "桃花", gua: "艮", symbol: "☶", dir: "東北", elem: "土", gods: "月老" },
+        9: { name: "天德", gua: "乾", symbol: "☰", dir: "西北", elem: "土", gods: "紫微" }
     };
 
+    // 按九宮格視覺順序渲染
     const renderOrder = [2, 3, 7, 1, 6, 4, 8, 5, 9];
     const grid = document.getElementById('grid');
     renderOrder.forEach(id => {
-        const item = data[id];
+        const item = palaceData[id];
         const wxClass = getWuXingClass(item.gua);
         const div = document.createElement('div');
         div.className = `palace`; div.id = `palace-${id}`;
-        div.innerHTML = `<div class="top-left-tag"><span class="num-main">${id}</span><span class="sub-text">（小六壬。三傳）</span></div><div class="gua-container"><span class="gua-tag ${wxClass}">${item.gua}</span><span class="yi-symbol ${wxClass}">${item.symbol}</span></div><span class="dir-tag">${item.dir}</span><span class="palace-name">${item.name}</span><span class="palace-element ${wxClass}">【${item.elem}】</span><span class="palace-god">${item.gods}</span>`;
+        div.innerHTML = `
+            <div class="top-left-tag"><span class="num-main">${id}</span></div>
+            <div class="gua-container">
+                <span class="gua-tag ${wxClass}">${item.gua}</span>
+                <span class="yi-symbol ${wxClass}">${item.symbol}</span>
+            </div>
+            <span class="dir-tag">${item.dir}</span>
+            <span class="palace-name">${item.name}</span>
+            <span class="palace-element ${wxClass}">【${item.elem}】</span>
+            <span class="palace-god">${item.gods}</span>
+        `;
         grid.appendChild(div);
     });
 
@@ -217,12 +223,26 @@
         const n3 = parseInt(document.getElementById('num3').value) || 0;
         const memoText = document.getElementById('memo').value;
         const b = getBazi();
+
         document.querySelectorAll('.palace').forEach(p => p.classList.remove('active-1', 'active-2', 'active-3'));
-        const f = getFinalPos(n1); const s = getFinalPos(n1 + n2); const t = getFinalPos(n1 + n2 + n3);
+
+        const f = getFinalPos(n1); 
+        const s = getFinalPos(n1 + n2); 
+        const t = getFinalPos(n1 + n2 + n3);
+
         document.getElementById(`palace-${f}`).classList.add('active-1');
         document.getElementById(`palace-${s}`).classList.add('active-2');
         document.getElementById(`palace-${t}`).classList.add('active-3');
-        const record = { id: Date.now(), time: b.fullTime, bazi: `${b.yG}${b.yZ} ${b.mG}${b.mZ} ${b.dG}${b.dZ} ${b.hG}${b.hZ}`, res: `${data[f].name} → ${data[s].name} → ${data[t].name}`, god: data[t].gods, memo: memoText, update: "" };
+
+        const record = {
+            id: Date.now(),
+            time: b.fullTime,
+            bazi: `${b.yG}${b.yZ} ${b.mG}${b.mZ} ${b.dG}${b.dZ} ${b.hG}${b.hZ}`,
+            res: `${palaceData[f].name} → ${palaceData[s].name} → ${palaceData[t].name}`,
+            memo: memoText,
+            update: ""
+        };
+
         let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         history.unshift(record);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
@@ -233,17 +253,28 @@
     function displayHistory() {
         const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         const list = document.getElementById('history-list');
-        list.innerHTML = history.map((item, index) => `<div class="history-item"><div class="history-time">${item.time} | ${item.bazi}</div><div><b>${item.res}</b></div><div style="font-size:0.7rem; color:#ffd700;">🔱 護持：${item.god}</div>${item.memo ? `<div style="color:#ddd; margin-top:6px; font-style:italic; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">📝 問事：${item.memo}</div>` : ''}${item.update ? `<div style="color:#5DADE2; margin-top:6px; padding:4px; background:rgba(93, 173, 226, 0.1); border-radius:4px;">✅ 占驗：${item.update}</div>` : ''}<div style="display:flex; gap:10px; margin-top:8px;"><button style="font-size:0.7rem; cursor:pointer; padding:5px 12px; border:1px solid #5DADE2; border-radius:4px; background:transparent; color:#5DADE2;" onclick="updateRecord(${index})">＋追加備註</button><button style="font-size:0.7rem; cursor:pointer; padding:5px 12px; border:1px solid #F1948A; border-radius:4px; background:transparent; color:#F1948A;" onclick="deleteItem(${index})">刪除</button></div></div>`).join('');
+        list.innerHTML = history.map((item, index) => `
+            <div class="history-item">
+                <div class="history-time">${item.time} | ${item.bazi}</div>
+                <div><b>${item.res}</b></div>
+                ${item.memo ? `<div style="color:#ddd; margin-top:6px; font-style:italic;">📝 ${item.memo}</div>` : ''}
+                ${item.update ? `<div style="color:#5DADE2; margin-top:4px;">✅ ${item.update}</div>` : ''}
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <button style="font-size:0.7rem; border:1px solid #5DADE2; background:none; color:#5DADE2; padding:3px 8px; border-radius:4px;" onclick="updateRecord(${index})">備註</button>
+                    <button style="font-size:0.7rem; border:1px solid #F1948A; background:none; color:#F1948A; padding:3px 8px; border-radius:4px;" onclick="deleteItem(${index})">刪除</button>
+                </div>
+            </div>
+        `).join('');
     }
 
     function updateRecord(index) {
         let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        const newNote = prompt("請輸入追加的占驗備註：", history[index].update);
+        const newNote = prompt("追加占驗：", history[index].update);
         if (newNote !== null) { history[index].update = newNote; localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); displayHistory(); }
     }
 
-    function deleteItem(index) { if(confirm("確定刪除此紀錄？")) { let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); history.splice(index, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); displayHistory(); } }
-    function clearHistory() { if(confirm("確定清空所有數據？")) { localStorage.removeItem(STORAGE_KEY); displayHistory(); } }
+    function deleteItem(index) { if(confirm("確定刪除？")) { let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); history.splice(index, 1); localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); displayHistory(); } }
+    function clearHistory() { if(confirm("確定清空？")) { localStorage.removeItem(STORAGE_KEY); displayHistory(); } }
     displayHistory();
 </script>
 </body>
